@@ -191,16 +191,17 @@ func (srv *Trade) Refund(ctx context.Context, req *pb.Request, res *pb.Response)
 
 func (srv *Trade) RefundQuery(ctx context.Context, req *pb.Request, res *pb.Response) (err error) {
 	// 配置参数
-	refundOrder, err := mxj.NewMapJson([]byte(req.Config["RefundOrder"]))
-	if err != nil {
-		return err
-	}
+	// order, err := mxj.NewMapJson([]byte(req.Config["Order"]))
+	// if err != nil {
+	// 	return err
+	// }
 	request := requests.NewCommonRequest()
 	request.ApiName = "pay.refundQuery"
 	request.BizContent = map[string]interface{}{
-		"merchant_id":    req.Config["SubMerId"],
-		"enterpriseReg":  req.Config["EnterpriseReg"],
-		"third_order_id": refundOrder["bank_trade_no"], // 商户订单号(商户交易系统中唯一)
+		"merchant_id":   req.Config["SubMerId"],
+		"enterpriseReg": req.Config["EnterpriseReg"],
+		"out_order_id":  req.BizContent.OutRefundNo,
+		// "third_order_id": order["bank_trade_no"], // 商户订单号(商户交易系统中唯一)
 	}
 	return srv.request(request, req, res)
 }
