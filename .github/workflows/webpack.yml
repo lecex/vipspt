@@ -1,0 +1,33 @@
+name: Build and Publish Docker
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - v1.*
+      - v2.*
+      - v3.*
+      
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Clone repo
+      uses: actions/checkout@v2
+
+    - name: Fetch tags
+      run: git fetch --prune --unshallow
+
+    - name: Publish to Docker Repository
+      uses: elgohr/Publish-Docker-Github-Action@master
+      env:
+        ACCES_STOKEN: ${{ secrets.ACCES_STOKEN }}
+      with:
+        name: lecex/vipspt
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+        buildargs: ACCES_STOKEN
+        registry: registry.cn-hongkong.aliyuncs.com
+        tag_names: true
+        snapshot: true
