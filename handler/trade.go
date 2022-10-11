@@ -15,8 +15,6 @@ import (
 
 	"github.com/lecex/vipspt/service"
 	"github.com/lecex/vipspt/service/requests"
-	"github.com/lecex/vipspt/service/responses"
-	"github.com/lecex/vipspt/service/util"
 )
 
 // Trade 支付结构
@@ -110,29 +108,7 @@ func (srv *Trade) Notify(ctx context.Context, req *pb.NotifyRequest, res *pb.Not
 }
 
 func (srv *Trade) HanderNotify(ctx context.Context, req *pb.Request, res *pb.Response) (err error) {
-	content, err := mxj.NewMapJson([]byte(req.BizContent.NotifyData))
-	if err != nil {
-		return err
-	}
-	ok, err := util.VerifySign(util.EncodeSignParams(content), content["sign"].(string), "", req.Config["VipsptPublicKeyData"], "RSA")
-	if err != nil {
-		return err
-	}
-	if ok {
-		r := &responses.CommonResponse{}
-		data := r.HanderVipsptNotify(content)
-		if err != nil {
-			return err
-		}
-		dataJson, err := data.Json()
-		if err != nil {
-			return err
-		}
-		res.Content = string(dataJson)
-	} else {
-		return fmt.Errorf("验签失败")
-	}
-	return err
+	return fmt.Errorf("暂不支持,HanderNotify:vipspt")
 }
 
 func (srv *Trade) AopF2F(ctx context.Context, req *pb.Request, res *pb.Response) (err error) {
@@ -176,93 +152,61 @@ func (srv *Trade) Query(ctx context.Context, req *pb.Request, res *pb.Response) 
 	if err != nil {
 		return err
 	}
-	timeFormat := "2006-01-02T15:04:05+08:00"
-	createdAt, _ := time.Parse(timeFormat, order["created_at"].(string))
 	request := requests.NewCommonRequest()
-	request.ApiName = "vipspt.online.trade.order.query"
+	request.ApiName = "pay.query"
 	request.BizContent = map[string]interface{}{
-		"out_trade_no": req.BizContent.OutTradeNo, // 商户订单号(商户交易系统中唯一)
-		"shopdate":     createdAt.Format("20060102"),
+		"merchant_id":    req.Config["SubMerId"],
+		"enterpriseReg":  req.Config["EnterpriseReg"],
+		"third_order_id": order["bank_trade_no"], // 商户订单号(商户交易系统中唯一)
 	}
 	return srv.request(request, req, res)
 }
 
 func (srv *Trade) Refund(ctx context.Context, req *pb.Request, res *pb.Response) (err error) {
 	// 配置参数
-	refundOrder, err := mxj.NewMapJson([]byte(req.Config["RefundOrder"]))
+	originalOrder, err := mxj.NewMapJson([]byte(req.Config["OriginalOrder"]))
 	if err != nil {
 		return err
 	}
-	timeFormat := "2006-01-02T15:04:05+08:00"
-	createdAt, _ := time.Parse(timeFormat, refundOrder["created_at"].(string))
 	refundFee, err := strconv.ParseFloat(req.BizContent.RefundFee, 64)
 	if err != nil {
 		return err
 	}
-	if req.BizContent.Title == "" {
-		req.BizContent.Title = "退款"
+	refundMsg := "退款"
+	if req.BizContent.Title != "" {
+		refundMsg = req.BizContent.Title
 	}
-	// 配置参数
 	request := requests.NewCommonRequest()
-	request.ApiName = "vipspt.online.trade.refund"
+	request.ApiName = "pay.refund"
 	request.BizContent = map[string]interface{}{
-		"out_trade_no":   req.BizContent.OutTradeNo,
-		"shopdate":       createdAt.Format("20060102"),
+		"merchant_id":    req.Config["SubMerId"],
+		"enterpriseReg":  req.Config["EnterpriseReg"],
+		"out_order_id":   req.BizContent.OutRefundNo,
+		"third_order_id": originalOrder["bank_trade_no"],
+		"refundMsg":      refundMsg,
 		"refund_amount":  decimal.NewFromFloat(refundFee).Div(decimal.NewFromFloat(float64(100))),
-		"refund_reason":  req.BizContent.Title,
-		"out_request_no": req.BizContent.OutRefundNo, // 商户订单号(商户交易系统中唯一)
 	}
 	return srv.request(request, req, res)
 }
 
 func (srv *Trade) RefundQuery(ctx context.Context, req *pb.Request, res *pb.Response) (err error) {
 	// 配置参数
+	refundOrder, err := mxj.NewMapJson([]byte(req.Config["RefundOrder"]))
+	if err != nil {
+		return err
+	}
 	request := requests.NewCommonRequest()
-	request.ApiName = "vipspt.online.trade.refund.query"
+	request.ApiName = "pay.refundQuery"
 	request.BizContent = map[string]interface{}{
-		"out_trade_no":   req.BizContent.OutTradeNo,  // 商户订单号(商户交易系统中唯一)
-		"out_request_no": req.BizContent.OutRefundNo, // 商户订单号(商户交易系统中唯一)
+		"merchant_id":    req.Config["SubMerId"],
+		"enterpriseReg":  req.Config["EnterpriseReg"],
+		"third_order_id": refundOrder["bank_trade_no"], // 商户订单号(商户交易系统中唯一)
 	}
 	return srv.request(request, req, res)
 }
 
 func (srv *Trade) JsApi(ctx context.Context, req *pb.Request, res *pb.Response) (err error) {
-	totalFee, err := strconv.ParseFloat(req.BizContent.TotalFee, 64)
-	if err != nil {
-		return err
-	}
-	// 微信Appid
-	wechatAppId := req.BizContent.AppId
-	if req.BizContent.AppId == "" {
-		wechatAppId = req.Config["WechatAppId"]
-	}
-	req.Config["NotifyUrl"] = srv.NotifyUrl + "?id=" + req.BizContent.Id
-	request := requests.NewCommonRequest()
-	request.BizContent = map[string]interface{}{
-		"out_trade_no":    req.BizContent.OutTradeNo, // 商户订单号(商户交易系统中唯一)
-		"shopdate":        time.Now().Format("20060102"),
-		"subject":         req.BizContent.Title,
-		"total_amount":    decimal.NewFromFloat(totalFee).Div(decimal.NewFromFloat(float64(100))), // 单位为分
-		"seller_id":       req.Config["SubMerId"],
-		"timeout_express": "10m",
-		"business_code":   "00510030",
-	}
-	switch req.BizContent.Method {
-	case "wechat":
-		request.ApiName = "vipspt.online.weixin.pay"
-		request.BizContent["sub_openid"] = req.BizContent.OpenId
-		request.BizContent["appid"] = wechatAppId
-	case "alipay":
-		request.ApiName = "vipspt.online.alijsapi.pay"
-		request.BizContent["buyer_id"] = req.BizContent.OpenId
-	case "unionpay":
-		request.ApiName = "vipspt.online.alijsapi.pay"
-		request.BizContent["userId"] = req.BizContent.OpenId
-		request.BizContent["spbill_create_ip"] = req.BizContent.OpenId
-		request.BizContent["allow_repeat_pay"] = "N"
-		return fmt.Errorf("暂不支持,银联支付:vipspt")
-	}
-	return srv.request(request, req, res)
+	return fmt.Errorf("暂不支持,JsApi:vipspt")
 }
 
 // QRCode 构建自己的聚合支付
@@ -280,20 +224,7 @@ func (srv *Trade) QRCode(ctx context.Context, req *pb.Request, res *pb.Response)
 }
 
 func (srv *Trade) OpenId(ctx context.Context, req *pb.Request, res *pb.Response) (err error) {
-	// 配置参数
-	switch req.BizContent.Method {
-	case "wechat":
-	default:
-		return fmt.Errorf("暂不支持,只支持微信付款码识别:vipspt")
-	}
-	request := requests.NewCommonRequest()
-	request.ApiName = "vipspt.online.wxpayQueryOpenId"
-	request.BizContent = map[string]interface{}{
-		"usercode":  req.Config["SubMerId"],
-		"auth_code": req.BizContent.AuthCode, // 被扫付款码
-		"subAppId":  req.BizContent.AppId,
-	}
-	return srv.request(request, req, res)
+	return fmt.Errorf("暂不支持,OpenId:vipspt")
 }
 
 func (srv *Trade) WxFacePayInfo(ctx context.Context, req *pb.Request, res *pb.Response) (err error) {
