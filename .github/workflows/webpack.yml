@@ -28,6 +28,6 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
         buildargs: ACCES_STOKEN
-        registry: registry.cn-hongkong.aliyuncs.com
+        registry: registry.cn-zhangjiakou.aliyuncs.com
         tag_names: true
         snapshot: true
