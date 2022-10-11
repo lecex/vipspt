@@ -74,8 +74,8 @@ func (c *Common) Request(response *responses.CommonResponse) (err error) {
 	}
 	// 构建配置参数
 	params := map[string]interface{}{
-		"appid":     con.Appid,
-		"appsecret": con.SecretKey,
+		"appid": con.Appid,
+		// "appsecret": con.SecretKey,
 		"timeStamp": time.Now().UnixNano() / 1e6, // 毫米时间戳
 		"sign":      sign,
 		"data":      req.BizContent,
