@@ -155,9 +155,13 @@ func (srv *Trade) Query(ctx context.Context, req *pb.Request, res *pb.Response) 
 	request := requests.NewCommonRequest()
 	request.ApiName = "pay.query"
 	request.BizContent = map[string]interface{}{
-		"merchant_id":    req.Config["SubMerId"],
-		"enterpriseReg":  req.Config["EnterpriseReg"],
-		"third_order_id": order["bank_trade_no"], // 商户订单号(商户交易系统中唯一)
+		"merchant_id":   req.Config["SubMerId"],
+		"enterpriseReg": req.Config["EnterpriseReg"],
+	}
+	if v, ok := order["bank_trade_no"]; ok && v != nil && v != "" {
+		request.BizContent["third_order_id"] = v
+	} else {
+		request.BizContent["out_order_id"] = req.BizContent.OutTradeNo
 	}
 	return srv.request(request, req, res)
 }
