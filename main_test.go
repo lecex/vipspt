@@ -17,29 +17,29 @@ var Config = map[string]string{
 	"EnterpriseReg": os.Getenv("PAY_VIPSPT_ENTERPRISE_REG"),
 	"Sandbox":       fmt.Sprintf("%t", false),
 	// "Order":         `{"created_at":"2022-09-08T15:04:05+08:00"}`,
-	"Order":         `{"bank_trade_no":"20221011111351886981"}`,
+	// "Order":         `{"bank_trade_no":"20221011111351886981"}`,
 	"OriginalOrder": `{"bank_trade_no":"20221011111351886981"}`,
 	"RefundOrder":   `{"bank_trade_no":"20221011162901020790"}`,
 }
 
 func TestAopF2F(t *testing.T) {
-	req := &pb.Request{
-		Config: Config,
-		BizContent: &pb.BizContent{
-			Method:     "wechat",
-			OutTradeNo: "513457061273811892",
-			TotalFee:   "1",
-			Title:      "测试商品",
-			AuthCode:   "133800631298266954",
-		},
-	}
-	res := &pb.Response{}
-	h := &handler.Trade{
-		NotifyUrl: "http://127.0.0.1:8080/notify",
-	}
-	err := h.AopF2F(context.TODO(), req, res)
-	fmt.Println("TestAopF2F", res, err)
-	t.Log(req, res, err)
+	// req := &pb.Request{
+	// 	Config: Config,
+	// 	BizContent: &pb.BizContent{
+	// 		Method:     "wechat",
+	// 		OutTradeNo: "0168921e-b9ac-43c9-a2b2-b178110ae4e6",
+	// 		TotalFee:   "1",
+	// 		Title:      "测试商品",
+	// 		AuthCode:   "132421935747150471",
+	// 	},
+	// }
+	// res := &pb.Response{}
+	// h := &handler.Trade{
+	// 	NotifyUrl: "http://127.0.0.1:8080/notify",
+	// }
+	// err := h.AopF2F(context.TODO(), req, res)
+	// fmt.Println("TestAopF2F", res, err)
+	// t.Log(req, res, err)
 }
 
 //  51345706127381181888
@@ -47,7 +47,7 @@ func TestPayQuery(t *testing.T) {
 	req := &pb.Request{
 		Config: Config,
 		BizContent: &pb.BizContent{
-			OutTradeNo: "513457061273811892",
+			OutTradeNo: "0168921e-b9ac-43c9-a2b2-b178110ae4e6",
 		},
 	}
 	res := &pb.Response{}
@@ -58,34 +58,34 @@ func TestPayQuery(t *testing.T) {
 }
 
 func TestPayRefund(t *testing.T) {
-	req := &pb.Request{
-		Config: Config,
-		BizContent: &pb.BizContent{
-			OutRefundNo: "113457061273811892",
-			RefundFee:   "1",
-			OutTradeNo:  "513457061273811892",
-		},
-	}
-	res := &pb.Response{}
-	h := &handler.Trade{}
-	err := h.Refund(context.TODO(), req, res)
-	fmt.Println("TestRefund", res, err)
-	t.Log(req, res, err)
+	// req := &pb.Request{
+	// 	Config: Config,
+	// 	BizContent: &pb.BizContent{
+	// 		OutRefundNo: "113457061273811892",
+	// 		RefundFee:   "1",
+	// 		OutTradeNo:  "513457061273811892",
+	// 	},
+	// }
+	// res := &pb.Response{}
+	// h := &handler.Trade{}
+	// err := h.Refund(context.TODO(), req, res)
+	// fmt.Println("TestRefund", res, err)
+	// t.Log(req, res, err)
 }
 
 func TestPayRefundQuery(t *testing.T) {
 	// 创建连接
-	req := &pb.Request{
-		Config: Config,
-		BizContent: &pb.BizContent{
-			OutRefundNo: "113457061273811892",
-		},
-	}
-	res := &pb.Response{}
-	h := &handler.Trade{}
-	err := h.RefundQuery(context.TODO(), req, res)
-	fmt.Println("TestRefundQuery", res, err)
-	t.Log(req, res, err)
+	// req := &pb.Request{
+	// 	Config: Config,
+	// 	BizContent: &pb.BizContent{
+	// 		OutRefundNo: "113457061273811892",
+	// 	},
+	// }
+	// res := &pb.Response{}
+	// h := &handler.Trade{}
+	// err := h.RefundQuery(context.TODO(), req, res)
+	// fmt.Println("TestRefundQuery", res, err)
+	// t.Log(req, res, err)
 }
 
 func TestJsApi(t *testing.T) {

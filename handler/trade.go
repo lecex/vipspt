@@ -126,10 +126,6 @@ func (srv *Trade) AopF2F(ctx context.Context, req *pb.Request, res *pb.Response)
 	if err != nil {
 		return err
 	}
-	// 计算req.BizContent.OutTradeNo长度
-	if len(req.BizContent.OutTradeNo) > 18 {
-		return fmt.Errorf("订单号长度不能大于18位:vipspt")
-	}
 	request := requests.NewCommonRequest()
 	request.ApiName = "pay.pay"
 	request.BizContent = map[string]interface{}{
