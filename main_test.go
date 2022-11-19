@@ -58,19 +58,19 @@ func TestPayQuery(t *testing.T) {
 }
 
 func TestPayRefund(t *testing.T) {
-	// req := &pb.Request{
-	// 	Config: Config,
-	// 	BizContent: &pb.BizContent{
-	// 		OutRefundNo: "113457061273811892",
-	// 		RefundFee:   "1",
-	// 		OutTradeNo:  "513457061273811892",
-	// 	},
-	// }
-	// res := &pb.Response{}
-	// h := &handler.Trade{}
-	// err := h.Refund(context.TODO(), req, res)
-	// fmt.Println("TestRefund", res, err)
-	// t.Log(req, res, err)
+	req := &pb.Request{
+		Config: Config,
+		BizContent: &pb.BizContent{
+			OutRefundNo: "113457061273811892",
+			RefundFee:   "1",
+			OutTradeNo:  "513457061273811892",
+		},
+	}
+	res := &pb.Response{}
+	h := &handler.Trade{}
+	err := h.Refund(context.TODO(), req, res)
+	fmt.Println("TestRefund", res, err)
+	t.Log(req, res, err)
 }
 
 func TestPayRefundQuery(t *testing.T) {

@@ -86,18 +86,16 @@ func (srv *Trade) Notify(ctx context.Context, req *pb.NotifyRequest, res *pb.Not
 	if err != nil {
 		return err
 	}
-	r := &tradePB.Request{
-		BizContent: &tradePB.BizContent{
-			Id:         get["id"].(string),
-			NotifyData: string(postJson),
-		},
+	r := &tradePB.NotifyRequest{
+		Id:         get["id"].(string),
+		NotifyData: string(postJson),
 	}
-	rs := &tradePB.Response{}
+	rs := &tradePB.NotifyResponse{}
 	err = client.Call(ctx, srv.PayService, "Trades.Notify", r, rs)
 	if err != nil {
 		return err
 	}
-	if rs.Content.ReturnCode == "SUCCESS" {
+	if rs.ReturnCode == "SUCCESS" {
 		res.StatusCode = http.StatusOK
 		res.Body = "success"
 	} else {
